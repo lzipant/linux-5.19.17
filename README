@@ -1,0 +1,58 @@
+
+# 编译内核
+Install Dependencies:
+```shell
+sudo apt install pkg-config libncurses-dev flex bison libssl-dev
+```
+
+# qemu调试
+
+## 构建内核镜像
+所有的配置在busybox的_install目录下
+使用下面的命令执行脚本来构建：
+```shell
+sudo -E ./mkfs.sh
+```
+
+
+## Clion对接
+添加remote debug，选择gdb，配置gdb server地址为localost:1234，选择gdb symbol文件，该文件在源码根目录下，名称为vmlinuz。
+
+## qemu网络
+### 宿主机网络配置 （待重启验证）
+让内核与宿主机通信，需要在宿主机上做网络配置。
+1. 创建虚拟网桥设备br-qemu（下面的配置应该是会持久化的）
+```shell
+sudo nmcli connection add type bridge ifname br-qemu \
+    ipv4.method manual \
+    ipv4.addresses 10.0.0.1/24 \
+    bridge.stp no \
+    connection.autoconnect yes
+sudo nmcli connection up bridge-br-qemu
+```
+
+2. 创建tap/tun设备，为了持久化，使用systemctl来管理。
+```shell
+[Unit]
+Description=Persistent TAP interface (tap-qemu)
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=oneshot
+
+ExecStart=/usr/bin/ip tuntap add tap-qemu mode tap
+ExecStartPost=/usr/bin/ip link set tap-qemu master br-qemu
+ExecStartPost=/usr/bin/ip link set tap-qemu up
+ExecStop=/usr/bin/ip link delete tap-qemu
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## 启动qemu虚拟机
+使用下面的命令执行脚本
+```shell
+sudo -E ./qemu.sh
+```

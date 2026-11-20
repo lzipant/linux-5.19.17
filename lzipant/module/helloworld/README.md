@@ -1,0 +1,3 @@
+参考：https://www.toutiao.com/article/6848065724905161228/?tt_from=mobile_qq&utm_campaign=client_share&timestamp=1597801678&app=news_article&utm_source=mobile_qq&utm_medium=toutiao_android&use_new_style=1&req_id=202008190947570100140471952C5FB432&group_id=6848065724905161228
+
+将驱动引入内核源码树中，参考drivers/char目录下的Kconfig和Makefile文件。
